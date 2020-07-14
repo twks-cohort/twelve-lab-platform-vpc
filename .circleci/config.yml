@@ -166,26 +166,26 @@ workflows:
             - nonprod-change-apply
           filters: *on-tag-master
 
-      - terraform/plan:
-          name: mapi-change-plan
-          context: ZTW
-          shell: secrethub run -- /bin/sh -eo pipefail
-          workspace: mapi
-          before-terraform:
-            - run:
-                name: generate environmental configuration and credentials from templates
-                command: |
-                  secrethub inject -i tpl/terraformrc.tpl -o ~/.terraformrc
-                  secrethub inject -i tpl/mapi.auto.tfvars.json.tpl -o mapi.auto.tfvars.json
-          requires:
-            - nonprod-change-apply
-          filters: *on-tag-master
+      # - terraform/plan:
+      #     name: mapi-change-plan
+      #     context: ZTW
+      #     shell: secrethub run -- /bin/sh -eo pipefail
+      #     workspace: mapi
+      #     before-terraform:
+      #       - run:
+      #           name: generate environmental configuration and credentials from templates
+      #           command: |
+      #             secrethub inject -i tpl/terraformrc.tpl -o ~/.terraformrc
+      #             secrethub inject -i tpl/mapi.auto.tfvars.json.tpl -o mapi.auto.tfvars.json
+      #     requires:
+      #       - nonprod-change-apply
+      #     filters: *on-tag-master
 
       - approve-prod-and-mapi-changes:
           type: approval
           requires:
             - prod-change-plan
-            - mapi-change-plan
+            # - mapi-change-plan
           filters: *on-tag-master
 
       - terraform/apply:
@@ -210,24 +210,24 @@ workflows:
             - approve-prod-and-mapi-changes
           filters: *on-tag-master
 
-      - terraform/apply:
-          name: mapi-change-apply
-          context: ZTW
-          shell: secrethub run -- /bin/sh -eo pipefail
-          workspace: mapi
-          before-terraform:
-            - run:
-                name: generate environmental configuration and credentials from templates
-                command: |
-                  secrethub inject -i tpl/terraformrc.tpl -o ~/.terraformrc
-                  secrethub inject -i tpl/mapi.auto.tfvars.json.tpl -o mapi.auto.tfvars.json
-                  secrethub inject -i tpl/prod.test.sh.tpl -o prod.test.sh
-          after-terraform:
-            - run:
-                name: test mapi account changes
-                environment:
-                  TEST_ENV: mapi
-                command: secrethub run -- bash prod.test.sh mapi
-          requires:
-            - approve-prod-and-mapi-changes
-          filters: *on-tag-master
+      # - terraform/apply:
+      #     name: mapi-change-apply
+      #     context: ZTW
+      #     shell: secrethub run -- /bin/sh -eo pipefail
+      #     workspace: mapi
+      #     before-terraform:
+      #       - run:
+      #           name: generate environmental configuration and credentials from templates
+      #           command: |
+      #             secrethub inject -i tpl/terraformrc.tpl -o ~/.terraformrc
+      #             secrethub inject -i tpl/mapi.auto.tfvars.json.tpl -o mapi.auto.tfvars.json
+      #             secrethub inject -i tpl/prod.test.sh.tpl -o prod.test.sh
+      #     after-terraform:
+      #       - run:
+      #           name: test mapi account changes
+      #           environment:
+      #             TEST_ENV: mapi
+      #           command: secrethub run -- bash prod.test.sh mapi
+      #     requires:
+      #       - approve-prod-and-mapi-changes
+      #     filters: *on-tag-master
