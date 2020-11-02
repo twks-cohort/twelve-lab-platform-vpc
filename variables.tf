@@ -1,7 +1,7 @@
 terraform {
-  required_version = "~> 0.12.28"
+  required_version = "~> 0.13"
   required_providers {
-    aws = "~> 2.69"
+    aws = "~> 3.13"
   }
 
   backend "remote" {
@@ -14,7 +14,7 @@ terraform {
 }
 
 provider "aws" {
-  version = "~> 2.0"
+  version = "~> 3.0"
   region  = var.aws_region
   assume_role {
     role_arn     = "arn:aws:iam::${var.account_id}:role/${var.assume_role}"
