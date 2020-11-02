@@ -1,5 +1,6 @@
 # lab-platform-vpc
 
+```
 | vpc      | region          | az              | az             | az             | 
 |----------|:---------------:|:------------ --:|:--------------:|---------------:|
 |          |                 |                 |                |                |
@@ -43,4 +44,4 @@
 | public  | local, igw                     |
 | private | local, natgw-public-us-east-1a |
 | intra   | local                          |
-
+```
