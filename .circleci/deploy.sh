@@ -2,7 +2,7 @@
 
 ENVIRONMENT=$1
 
-$ cat <<EOF > environment.yaml
+cat <<EOF > environment.yaml
 ---
 version: 2.1
 
