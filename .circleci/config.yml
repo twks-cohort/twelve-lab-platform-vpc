@@ -20,7 +20,7 @@ jobs:
       #     command: bash .circleci/deploy.sh << parameters.env >>
       - continuation/continue:
           configuration_path: .circleci/deploy.yml # environment.yml
-          parameters: "{ \"parameters\": { \"env\": \"<< parameters.env >>\" } }"
+          parameters: "{ \"env\": \"<< parameters.env >>\" }"
 
 workflows:
   setup:
