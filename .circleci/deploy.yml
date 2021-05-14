@@ -44,7 +44,6 @@ workflows:
                 command: |
                   secrethub inject -i tpl/terraformrc.tpl -o ~/.terraformrc
                   secrethub inject -i environments/<< pipeline.parameters.env >>.auto.tfvars.json.tpl -o << pipeline.parameters.env >>.auto.tfvars.json
-                  secrethub inject -i tpl/vpc.test.sh.tpl -o vpc.test.sh
           after-terraform:
             - run:
                 name: test environment changes
@@ -52,6 +51,6 @@ workflows:
                   TEST_ENV: << pipeline.parameters.env >>
                 command: |
                   cat vpc.test.sh
-                  secrethub run -- bash vpc.test.sh << pipeline.parameters.env >>
+                  secrethub run -- bash scripts/vpc.test.sh << pipeline.parameters.env >>
           requires:
             - approve-<< pipeline.parameters.env >>-changes
