@@ -20,7 +20,7 @@ jobs:
                 docker:
                   - image: cimg/base:2021.04
                 steps:
-                  - run: echo 'dynamic config!
+                  - run: echo 'dynamic config!'
             workflows:
              workflow1:
               jobs:
