@@ -21,7 +21,7 @@ jobs:
             pwd
             bash .circleci/deploy.sh << parameters.env >>
       - continuation/continue:
-          configuration_path: ../environment.yml
+          configuration_path: environment.yml
 
 workflows:
   setup:
