@@ -1,26 +1,38 @@
 version: 2.1
 
-# this allows you to use CircleCI's dynamic configuration feature
-setup: true 
-
-# the continuation orb is required in order to use dynamic configuration
+setup: true
+ 
 orbs:
   continuation: circleci/continuation@0.1.2
 
-# our defined job, and its steps
 jobs:
-  generate:
+  setup:
     executor: continuation/default
     steps:
-      - checkout # checkout code
+      - checkout
+      - run:
+          name: Generate config
+          command: |
+            cat > main.yml \<<- "EOF"
+            version: 2.1
+            jobs:
+              job1:
+                docker:
+                  - image: cimg/base:2021.04
+                steps:
+                  - run: echo 'dynamic config!
+            workflows:
+             workflow1:
+              jobs:
+               - job1
+            EOF
       - continuation/continue:
-          configuration_path: test.yml # use newly generated config to continue
+          configuration_path: main.yml
 
-# our single workflow, that triggers the setup job defined above
 workflows:
-  test-pipeline:
+  setup:
     jobs:
-      - generate
+      - setup
 
 
 
