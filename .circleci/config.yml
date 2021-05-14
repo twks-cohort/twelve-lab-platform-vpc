@@ -13,12 +13,8 @@ jobs:
     executor: continuation/default
     steps:
       - checkout # checkout code
-      - run: # run a command
-          name: Generate config
-          command: |
-            ./generate-config > generated_config.yml 
       - continuation/continue:
-          configuration_path: generated_config.yml # use newly generated config to continue
+          configuration_path: test.yml # use newly generated config to continue
 
 # our single workflow, that triggers the setup job defined above
 workflows:
