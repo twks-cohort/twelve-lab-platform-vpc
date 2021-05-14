@@ -1,35 +1,65 @@
----
 version: 2.1
-setup: true
 
+# this allows you to use CircleCI's dynamic configuration feature
+setup: true 
+
+# the continuation orb is required in order to use dynamic configuration
 orbs:
   continuation: circleci/continuation@0.1.2
 
+# our defined job, and its steps
 jobs:
-  terraform:
-    parameters:
-      env:
-        description: env value to use for generated pipeline
-        type: string
-        default: ''
+  setup:
     executor: continuation/default
     steps:
-      - checkout
-      - run:
-          name: generate terraform-deploy circle pipeline passed environment parameter >> environment.yml
-          command: bash deploy.sh << parameters.env >>
+      - checkout # checkout code
+      - run: # run a command
+          name: Generate config
+          command: |
+            ./generate-config > generated_config.yml 
       - continuation/continue:
-          configuration_path: environment.yml # use newly generated environment deployment pipeline to continue
+          configuration_path: generated_config.yml # use newly generated config to continue
 
+# our single workflow, that triggers the setup job defined above
 workflows:
-  version: 2
-  lab-platform-vpc-pipeline:
+  setup:
     jobs:
-      - terraform:
-          name: deploy-sandbox
-          env: sandbox
-          filters: 
-            branches:
-              only: /master/
-            tags:
-              ignore: /.*/
+      - setup
+
+
+
+# ---
+# version: 2.1
+# setup: true
+
+# orbs:
+#   continuation: circleci/continuation@0.1.2
+
+# jobs:
+#   terraform:
+#     parameters:
+#       env:
+#         description: env value to use for generated pipeline
+#         type: string
+#         default: ''
+#     executor: continuation/default
+#     steps:
+#       - checkout
+#       - run:
+#           name: generate terraform-deploy circle pipeline passed environment parameter >> environment.yml
+#           command: bash deploy.sh << parameters.env >>
+#       - continuation/continue:
+#           configuration_path: environment.yml # use newly generated environment deployment pipeline to continue
+
+# workflows:
+#   version: 2
+#   lab-platform-vpc-pipeline:
+#     jobs:
+#       - terraform:
+#           name: deploy-sandbox
+#           env: sandbox
+#           filters: 
+#             branches:
+#               only: /master/
+#             tags:
+#               ignore: /.*/
