@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 ENVIRONMENT=$1
+echo $ENVIRONMENT
 
-case ENVIRONMENT in
+case ${ENVIRONMENT} in
 
   sandbox)
     AWS_ACCOUNT={{ twdps/di/svc/aws/dps-2/aws-account-id }}
