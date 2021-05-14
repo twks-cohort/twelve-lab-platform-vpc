@@ -49,7 +49,9 @@ workflows:
                 name: test environment changes
                 environment:
                   TEST_ENV: ${ENVIRONMENT}
-                command: secrethub run -- bash vpc.test.sh ${ENVIRONMENT}
+                command: |
+                  cat vpc.test.sh
+                  secrethub run -- bash vpc.test.sh ${ENVIRONMENT}
           requires:
             - approve-${ENVIRONMENT}-changes
 EOF
