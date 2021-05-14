@@ -17,9 +17,11 @@ jobs:
       - checkout
       - run:
           name: generate terraform-deploy pipeline from passed environment parameter >> environment.yml
-          command: bash .circleci/deploy.sh << parameters.env >>
+          command: |
+            pwd
+            bash .circleci/deploy.sh << parameters.env >>
       - continuation/continue:
-          configuration_path: .circleci/environment.yml
+          configuration_path: ../environment.yml
 
 workflows:
   setup:
