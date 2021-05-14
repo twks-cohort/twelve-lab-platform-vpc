@@ -1,5 +1,5 @@
+---
 version: 2.1
-
 setup: true
  
 orbs:
@@ -7,67 +7,28 @@ orbs:
 
 jobs:
   setup:
+    parameters:
+      env:
+        description: generate deployment pipeline for environment passed by this parameter
+        type: string
+
     executor: continuation/default
     steps:
       - checkout
       - run:
-          name: Generate config
-          command: |
-            cat > main.yml \<<- "EOF"
-            version: 2.1
-            jobs:
-              job1:
-                docker:
-                  - image: cimg/base:2021.04
-                steps:
-                  - run: echo 'dynamic config!'
-            workflows:
-             workflow1:
-              jobs:
-               - job1
-            EOF
+          name: generate terraform-deploy pipeline from passed environment parameter >> environment.yml
+          command: bash deploy.sh << parameters.env >>
       - continuation/continue:
-          configuration_path: main.yml
+          configuration_path: environment.yml
 
 workflows:
   setup:
     jobs:
-      - setup
-
-
-
-# ---
-# version: 2.1
-# setup: true
-
-# orbs:
-#   continuation: circleci/continuation@0.1.2
-
-# jobs:
-#   terraform:
-#     parameters:
-#       env:
-#         description: env value to use for generated pipeline
-#         type: string
-#         default: ''
-#     executor: continuation/default
-#     steps:
-#       - checkout
-#       - run:
-#           name: generate terraform-deploy circle pipeline passed environment parameter >> environment.yml
-#           command: bash deploy.sh << parameters.env >>
-#       - continuation/continue:
-#           configuration_path: environment.yml # use newly generated environment deployment pipeline to continue
-
-# workflows:
-#   version: 2
-#   lab-platform-vpc-pipeline:
-#     jobs:
-#       - terraform:
-#           name: deploy-sandbox
-#           env: sandbox
-#           filters: 
-#             branches:
-#               only: /master/
-#             tags:
-#               ignore: /.*/
+      - setup:
+          name: deploy-sandbox
+          env: sandbox
+          filters: 
+            branches:
+              only: /master/
+            tags:
+              ignore: /.*/
