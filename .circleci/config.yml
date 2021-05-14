@@ -9,7 +9,7 @@ orbs:
 
 # our defined job, and its steps
 jobs:
-  setup:
+  generate:
     executor: continuation/default
     steps:
       - checkout # checkout code
@@ -18,9 +18,9 @@ jobs:
 
 # our single workflow, that triggers the setup job defined above
 workflows:
-  setup:
+  test-pipeline:
     jobs:
-      - setup
+      - generate
 
 
 
