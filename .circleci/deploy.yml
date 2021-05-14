@@ -1,0 +1,56 @@
+---
+version: 2.1
+
+orbs:
+  terraform: feedyard/terraform@0.5.0
+
+parameters:
+  env:
+    description: environment identifier used by terraform deploy
+    type: string
+
+workflows:
+  version: 2
+  lab-platform-vpc-pipeline:
+
+    jobs:
+      - terraform/plan:
+          name: << pipeline.parameters.env >>-change-plan
+          context: twdps-di
+          shell: secrethub run -- /bin/sh -eo pipefail
+          workspace: << pipeline.parameters.env >>
+          before-terraform:
+            - run:
+                name: generate environment configuration and credentials from templates
+                command: |
+                  secrethub inject -i tpl/terraformrc.tpl -o ~/.terraformrc
+                  secrethub inject -i environments/<< pipeline.parameters.env >>.auto.tfvars.json.tpl -o << pipeline.parameters.env >>.auto.tfvars.json
+
+      - approve-changes:
+          name: approve-<< pipeline.parameters.env >>-changes
+          type: approval
+          requires:
+            - << pipeline.parameters.env >>-change-plan
+
+      - terraform/apply:
+          name: << pipeline.parameters.env >>-change-apply
+          context: twdps-di
+          shell: secrethub run -- /bin/sh -eo pipefail
+          workspace: << pipeline.parameters.env >>
+          before-terraform:
+            - run:
+                name: generate environmental configuration and credentials from templates
+                command: |
+                  secrethub inject -i tpl/terraformrc.tpl -o ~/.terraformrc
+                  secrethub inject -i environments/<< pipeline.parameters.env >>.auto.tfvars.json.tpl -o << pipeline.parameters.env >>.auto.tfvars.json
+                  secrethub inject -i tpl/vpc.test.sh.tpl -o vpc.test.sh
+          after-terraform:
+            - run:
+                name: test environment changes
+                environment:
+                  TEST_ENV: << pipeline.parameters.env >>
+                command: |
+                  cat vpc.test.sh
+                  secrethub run -- bash vpc.test.sh << pipeline.parameters.env >>
+          requires:
+            - approve-<< pipeline.parameters.env >>-changes
