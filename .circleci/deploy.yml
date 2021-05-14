@@ -6,9 +6,16 @@ orbs:
 
 parameters:
   env:
-    description: environment identifier used by terraform deploy
+    description: Deploy environment
     type: string
     default: ''
+
+environment-credentials-and-configuration: &environment-credentials-and-configuration
+  - run:
+      name: generate environment credentials and configuration from templates
+      command: |
+        secrethub inject -i tpl/terraformrc.tpl -o ~/.terraformrc
+        secrethub inject -i environments/<< pipeline.parameters.env >>.auto.tfvars.json.tpl -o << pipeline.parameters.env >>.auto.tfvars.json
 
 workflows:
   version: 2
@@ -20,12 +27,12 @@ workflows:
           context: twdps-di
           shell: secrethub run -- /bin/sh -eo pipefail
           workspace: << pipeline.parameters.env >>
-          before-terraform:
-            - run:
-                name: generate environment configuration and credentials from templates
-                command: |
-                  secrethub inject -i tpl/terraformrc.tpl -o ~/.terraformrc
-                  secrethub inject -i environments/<< pipeline.parameters.env >>.auto.tfvars.json.tpl -o << pipeline.parameters.env >>.auto.tfvars.json
+          before-terraform: *environment-credentials-and-configuration
+            # - run:
+            #     name: generate environment credentials and configuration from templates
+            #     command: |
+            #       secrethub inject -i tpl/terraformrc.tpl -o ~/.terraformrc
+            #       secrethub inject -i environments/<< pipeline.parameters.env >>.auto.tfvars.json.tpl -o << pipeline.parameters.env >>.auto.tfvars.json
 
       - approve-changes:
           name: approve-<< pipeline.parameters.env >>-changes
@@ -40,7 +47,7 @@ workflows:
           workspace: << pipeline.parameters.env >>
           before-terraform:
             - run:
-                name: generate environmental configuration and credentials from templates
+                name: generate environmental credentials and configuration from templates
                 command: |
                   secrethub inject -i tpl/terraformrc.tpl -o ~/.terraformrc
                   secrethub inject -i environments/<< pipeline.parameters.env >>.auto.tfvars.json.tpl -o << pipeline.parameters.env >>.auto.tfvars.json
