@@ -51,5 +51,5 @@ workflows:
                   TEST_ENV: ${ENVIRONMENT}
                 command: secrethub run -- bash vpc.test.sh ${ENVIRONMENT}
           requires:
-            - approve-changes
+            - approve-${ENVIRONMENT}-changes
 EOF
