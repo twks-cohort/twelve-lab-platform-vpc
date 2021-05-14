@@ -6,7 +6,7 @@ orbs:
   continuation: circleci/continuation@0.1.2
 
 jobs:
-  setup:
+  test:
     parameters:
       env:
         description: generate deployment pipeline for environment passed by this parameter
@@ -25,7 +25,7 @@ jobs:
 workflows:
   setup:
     jobs:
-      - setup:
+      - test:
           name: deploy-sandbox
           env: sandbox
           filters: 

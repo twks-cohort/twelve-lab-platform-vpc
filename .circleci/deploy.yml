@@ -28,11 +28,6 @@ workflows:
           shell: secrethub run -- /bin/sh -eo pipefail
           workspace: << pipeline.parameters.env >>
           before-terraform: *environment-credentials-and-configuration
-            # - run:
-            #     name: generate environment credentials and configuration from templates
-            #     command: |
-            #       secrethub inject -i tpl/terraformrc.tpl -o ~/.terraformrc
-            #       secrethub inject -i environments/<< pipeline.parameters.env >>.auto.tfvars.json.tpl -o << pipeline.parameters.env >>.auto.tfvars.json
 
       - approve-changes:
           name: approve-<< pipeline.parameters.env >>-changes
@@ -45,19 +40,12 @@ workflows:
           context: twdps-di
           shell: secrethub run -- /bin/sh -eo pipefail
           workspace: << pipeline.parameters.env >>
-          before-terraform:
-            - run:
-                name: generate environmental credentials and configuration from templates
-                command: |
-                  secrethub inject -i tpl/terraformrc.tpl -o ~/.terraformrc
-                  secrethub inject -i environments/<< pipeline.parameters.env >>.auto.tfvars.json.tpl -o << pipeline.parameters.env >>.auto.tfvars.json
+          before-terraform: *environment-credentials-and-configuration
           after-terraform:
             - run:
-                name: test environment changes
+                name: configuration tests
                 environment:
                   TEST_ENV: << pipeline.parameters.env >>
-                command: |
-                  cat vpc.test.sh
-                  secrethub run -- bash scripts/vpc.test.sh << pipeline.parameters.env >>
+                command: secrethub run -- bash scripts/vpc.test.sh << pipeline.parameters.env >>
           requires:
             - approve-<< pipeline.parameters.env >>-changes
