@@ -5,18 +5,6 @@ setup: true
 orbs:
   continuation: circleci/continuation@0.1.2
 
-on-push-master: &on-push-master
-  branches:
-    only: /master/
-  tags:
-    ignore: /.*/
-
-on-tag-master: &on-tag-master
-  branches:
-    ignore: /.*/
-  tags:
-    only: /.*/
-
 jobs:
   terraform:
     parameters:
@@ -40,4 +28,8 @@ workflows:
       - terraform:
           name: deploy-sandbox
           env: sandbox
-          filters: *on-push-master
+          filters: 
+            branches:
+              only: /master/
+            tags:
+              ignore: /.*/
