@@ -8,6 +8,7 @@ parameters:
   env:
     description: environment identifier used by terraform deploy
     type: string
+    default: ''
 
 workflows:
   version: 2
