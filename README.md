@@ -18,7 +18,11 @@ Assumes the following reservations. Workflows include teardown.
 | private  |                 | 10.51.0.0/19    | 10.51.32.0/19  | 10.51.64.0/19  |
 | public   |                 | 10.51.96.0/24   | 10.51.97.0/24  | 10.51.98.0/24  |
 | intra    |                 | 10.51.100.0/23  | 10.51.102.0/23 | 10.51.104.0/23 |
-|          |                 |                 |                |                |
+
+*RESERVED*
+
+| vpc      | region          | az              | az             | az             |
+|----------|:---------------:|:------------ --:|:--------------:|---------------:|
 |          |                 |                 |                |                |
 |          | us-east-2       | us-east-2a      |   us-east-2b   |  us-east-2c    |
 | nonprod  | 10.55.0.0/16    |                 |                |                |
