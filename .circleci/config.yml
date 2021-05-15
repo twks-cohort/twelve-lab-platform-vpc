@@ -6,18 +6,15 @@ orbs:
   continuation: circleci/continuation@0.1.2
 
 jobs:
-  test:
+  terraform:
     parameters:
       env:
-        description: generate deployment pipeline for environment passed by this parameter
+        description: generate terraform deployment pipeline for environment passed by this parameter
         type: string
-
     executor: continuation/default
+    
     steps:
       - checkout
-      # - run:
-      #     name: generate terraform-deploy pipeline from passed environment parameter >> environment.yml
-      #     command: bash .circleci/deploy.sh << parameters.env >>
       - continuation/continue:
           configuration_path: .circleci/deploy.yml # environment.yml
           parameters: "{ \"env\": \"<< parameters.env >>\" }"
@@ -25,11 +22,28 @@ jobs:
 workflows:
   setup:
     jobs:
-      - test:
+
+      - terraform:
           name: deploy-sandbox
           env: sandbox
-          filters: 
-            branches:
-              only: /master/
-            tags:
-              ignore: /.*/
+          filters: *on-push-master
+
+      - terraform:
+          name: deploy-preview
+          env: preview
+          filters: *on-tag-master
+
+
+# git push: deploy sandbox
+on-push-master: &on-push-master
+  branches:
+    only: /master/
+  tags:
+    ignore: /.*/
+
+# git tag: release pipeline, currently just - preview -
+on-tag-master: &on-tag-master
+  branches:
+    ignore: /.*/
+  tags:
+    only: /.*/
