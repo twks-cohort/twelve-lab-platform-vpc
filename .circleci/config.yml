@@ -5,6 +5,20 @@ setup: true
 orbs:
   continuation: circleci/continuation@0.1.2
 
+# git push: deploy sandbox
+on-push-master: &on-push-master
+  branches:
+    only: /master/
+  tags:
+    ignore: /.*/
+
+# git tag: release pipeline, currently just - preview -
+on-tag-master: &on-tag-master
+  branches:
+    ignore: /.*/
+  tags:
+    only: /.*/
+
 jobs:
   terraform:
     parameters:
@@ -12,7 +26,7 @@ jobs:
         description: generate terraform deployment pipeline for environment passed by this parameter
         type: string
     executor: continuation/default
-    
+
     steps:
       - checkout
       - continuation/continue:
@@ -32,18 +46,3 @@ workflows:
           name: deploy-preview
           env: preview
           filters: *on-tag-master
-
-
-# git push: deploy sandbox
-on-push-master: &on-push-master
-  branches:
-    only: /master/
-  tags:
-    ignore: /.*/
-
-# git tag: release pipeline, currently just - preview -
-on-tag-master: &on-tag-master
-  branches:
-    ignore: /.*/
-  tags:
-    only: /.*/
