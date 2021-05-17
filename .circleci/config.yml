@@ -29,9 +29,11 @@ commands:
         default: ''
     steps:
       - run:
-          command: |
-            secrethub inject -i tpl/terraformrc.tpl -o ~/.terraformrc
-            secrethub inject -i environments/<< parameters.env >>.auto.tfvars.json.tpl -o << parameters.env >>.auto.tfvars.json
+          name: set ~/.terraformrc
+          command: secrethub inject -i tpl/terraformrc.tpl -o ~/.terraformrc
+      - run:
+          name: set << parameters.env >> environment variables
+          command: secrethub inject -i environments/<< parameters.env >>.auto.tfvars.json.tpl -o << parameters.env >>.auto.tfvars.json
 
   test-configuration:
     description: awspec tests of the resulting infrastructure resources
@@ -41,6 +43,7 @@ commands:
         default: ''
     steps:
       - run:
+          name: test << parameters.env >> configuration
           environment:
             TEST_ENV: << parameters.env >>
           command: secrethub run -- bash scripts/vpc.test.sh << parameters.env >>
