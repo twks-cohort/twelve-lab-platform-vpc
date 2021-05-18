@@ -55,7 +55,7 @@ workflows:
     jobs:
       - terraform/plan:
           name: sandbox-change-plan
-          context: twdps-di
+          context: twdps-core-labs-team
           shell: secrethub run -- /bin/sh -eo pipefail
           workspace: sandbox
           before-terraform:
@@ -71,7 +71,7 @@ workflows:
 
       - terraform/apply:
           name: sandbox-change-apply
-          context: twdps-di
+          context: twdps-core-labs-team
           shell: secrethub run -- /bin/sh -eo pipefail
           workspace: sandbox
           before-terraform:
@@ -84,49 +84,37 @@ workflows:
             - approve-sandbox-changes
           filters: *on-push-master
 
+      # release 
+      - terraform/plan:
+          name: preview-change-plan
+          context: twdps-core-labs-team
+          shell: secrethub run -- /bin/sh -eo pipefail
+          workspace: preview
+          before-terraform:
+            - set-environment:
+                env: preview
+          filters: *on-tag-master
 
+      - approve-preview-changes:
+          type: approval
+          requires:
+            - preview-change-plan
+          filters: *on-tag-master
 
-      # # release 
-      # - terraform/plan:
-      #     name: preview-change-plan
-      #     context: twdps-di
-      #     shell: secrethub run -- /bin/sh -eo pipefail
-      #     workspace: preview
-      #     before-terraform: *environment-credentials-and-configuration
-      #       - run:
-      #           name: generate environmental configuration and credentials from templates
-      #           command: |
-      #             secrethub inject -i tpl/terraformrc.tpl -o ~/.terraformrc
-      #             secrethub inject -i tpl/preview.auto.tfvars.json.tpl -o preview.auto.tfvars.json
-      #     filters: *on-tag-master
-
-      # - approve-preview-changes:
-      #     type: approval
-      #     requires:
-      #       - preview-change-plan
-      #     filters: *on-tag-master
-
-      # - terraform/apply:
-      #     name: preview-change-apply
-      #     context: twdps-di
-      #     shell: secrethub run -- /bin/sh -eo pipefail
-      #     workspace: preview
-      #     before-terraform: *environment-credentials-and-configuration
-      #       - run:
-      #           name: generate environmental configuration and credentials from templates
-      #           command: |
-      #             secrethub inject -i tpl/terraformrc.tpl -o ~/.terraformrc
-      #             secrethub inject -i tpl/preview.auto.tfvars.json.tpl -o preview.auto.tfvars.json
-      #             secrethub inject -i tpl/nonprod.test.sh.tpl -o nonprod.test.sh
-      #     after-terraform:
-      #       - run:
-      #           name: test preview account changes
-      #           environment:
-      #             TEST_ENV: preview
-      #           command: secrethub run -- bash nonprod.test.sh preview
-      #     requires:
-      #       - approve-preview-changes
-      #     filters: *on-tag-master
+      - terraform/apply:
+          name: preview-change-apply
+          context: twdps-core-labs-team
+          shell: secrethub run -- /bin/sh -eo pipefail
+          workspace: preview
+          before-terraform:
+            - set-environment:
+                env: preview
+          after-terraform:
+            - test-configuration:
+                env: sandbox
+          requires:
+            - approve-preview-changes
+          filters: *on-tag-master
       
       # # repeat tag release sections for each desired environment
       # #
