@@ -111,7 +111,7 @@ workflows:
                 env: preview
           after-terraform:
             - test-configuration:
-                env: sandbox
+                env: preview
           requires:
             - approve-preview-changes
           filters: *on-tag-master

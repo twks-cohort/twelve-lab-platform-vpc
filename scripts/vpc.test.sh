@@ -10,6 +10,3 @@ export AWS_SESSION_TOKEN=$(cat credentials | jq -r ".Credentials.SessionToken")
 export AWS_DEFAULT_REGION=$(cat ${ENVIRONMENT}.auto.tfvars.json | jq -r .aws_region)
 
 rspec
-
-
-
