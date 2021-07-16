@@ -1,4 +1,14 @@
-# lab-platform-vpc
+<div align="center">
+	<p>
+		<img alt="Thoughtworks Logo" src="https://raw.githubusercontent.com/ThoughtWorks-DPS/static/master/thoughtworks_flamingo_wave.png?sanitize=true" width=200 />
+    <br />
+		<img alt="DPS Title" src="https://raw.githubusercontent.com/ThoughtWorks-DPS/static/master/dps_lab_title.png?sanitize=true" width=350/>
+	</p>
+  <h3>ThoughtWorks DPS Lab</h3>
+  <h1>lab-platform-vpc</h1>
+</div>
+<br />
+
 
 ```
 | vpc      | region          | az              | az             | az             |
