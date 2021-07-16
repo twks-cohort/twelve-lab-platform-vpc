@@ -1,7 +1,5 @@
 # lab-platform-vpc
 
-Assumes the following reservations. Workflows include teardown.
-
 ```
 | vpc      | region          | az              | az             | az             |
 |----------|:---------------:|:------------ --:|:--------------:|---------------:|
