@@ -74,6 +74,7 @@ workflows:
           context: twdps-core-labs-team
           shell: secrethub run -- /bin/sh -eo pipefail
           workspace: sandbox
+          terraform-version: "1.0.5"
           before-terraform:
             - set-environment:
                 env: sandbox
