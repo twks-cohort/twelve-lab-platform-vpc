@@ -2,22 +2,21 @@
 version: 2.1
 
 orbs:
-  terraform: feedyard/terraform@0.6.0
+  terraform: twdps/terraform@dev:latest
 
 # git push: deploy sandbox
-on-push-master: &on-push-master
+on-push-main: &on-push-main
   branches:
-    only: /master/
+    only: /main/
   tags:
     ignore: /.*/
 
-# git tag: release pipeline, currently just - preview -
-on-tag-master: &on-tag-master
+# git tag: release 
+on-tag-main: &on-tag-main
   branches:
     ignore: /.*/
   tags:
     only: /.*/
-
 
 commands:
 
@@ -61,13 +60,13 @@ workflows:
           before-terraform:
             - set-environment:
                 env: sandbox
-          filters: *on-push-master
+          filters: *on-push-main
 
       - approve-sandbox-changes:
           type: approval
           requires:
             - sandbox-change-plan
-          filters: *on-push-master
+          filters: *on-push-main
 
       - terraform/apply:
           name: sandbox-change-apply
@@ -82,80 +81,125 @@ workflows:
                 env: sandbox
           requires:
             - approve-sandbox-changes
-          filters: *on-push-master
+          filters: *on-push-main
 
-      # release 
-      - terraform/plan:
-          name: preview-change-plan
-          context: twdps-core-labs-team
-          shell: secrethub run -- /bin/sh -eo pipefail
-          workspace: preview
-          before-terraform:
-            - set-environment:
-                env: preview
-          filters: *on-tag-master
-
-      - approve-preview-changes:
-          type: approval
-          requires:
-            - preview-change-plan
-          filters: *on-tag-master
-
-      - terraform/apply:
-          name: preview-change-apply
-          context: twdps-core-labs-team
-          shell: secrethub run -- /bin/sh -eo pipefail
-          workspace: preview
-          before-terraform:
-            - set-environment:
-                env: preview
-          after-terraform:
-            - test-configuration:
-                env: preview
-          requires:
-            - approve-preview-changes
-          filters: *on-tag-master
       
-      # # repeat tag release sections for each desired environment
-      # #
-      # # typical DI pipeline is: sandbox > preview > nonprod > prod > management
 
-      # - tear-down-lab-vpcs:
-      #     type: approval
-      #     filters: *on-push-master
+# ---
+# version: 2.1
 
-      # - approve-teardown-vpc:
-      #     type: approval
-      #     requires:
-      #       - tear-down-lab-vpcs
-      #     filters: *on-push-master
+# orbs:
+#   terraform: feedyard/terraform@0.6.0
 
-      # - terraform/destroy:
-      #     name: sandbox lab vpc teardown
-      #     context: twdps-di
-      #     shell: secrethub run -- /bin/sh -eo pipefail
-      #     workspace: sandbox
-      #     before-terraform:
-      #       - run:
-      #           name: generate environmental configuration and credentials from templates
-      #           command: |
-      #             secrethub inject -i tpl/terraformrc.tpl -o ~/.terraformrc
-      #             secrethub inject -i tpl/sandbox.auto.tfvars.json.tpl -o sandbox.auto.tfvars.json
-      #     requires:
-      #       - approve-teardown-vpc
-      #     filters: *on-push-master
+# # git push: deploy sandbox
+# on-push-master: &on-push-master
+#   branches:
+#     only: /master/
+#   tags:
+#     ignore: /.*/
 
-      # - terraform/destroy:
-      #     name: preview lab vpc teardown
-      #     context: twdps-di
-      #     shell: secrethub run -- /bin/sh -eo pipefail
-      #     workspace: preview
-      #     before-terraform:
-      #       - run:
-      #           name: generate environmental configuration and credentials from templates
-      #           command: |
-      #             secrethub inject -i tpl/terraformrc.tpl -o ~/.terraformrc
-      #             secrethub inject -i tpl/preview.auto.tfvars.json.tpl -o preview.auto.tfvars.json
-      #     requires:
-      #       - approve-teardown-vpc
-      #     filters: *on-push-master
+# # git tag: release pipeline, currently just - preview -
+# on-tag-master: &on-tag-master
+#   branches:
+#     ignore: /.*/
+#   tags:
+#     only: /.*/
+
+
+# commands:
+
+#   set-environment: 
+#     description: generate environment credentials and configuration from templates
+#     parameters:
+#       env:
+#         type: string
+#         default: ''
+#     steps:
+#       - run:
+#           name: set ~/.terraformrc
+#           command: secrethub inject -i tpl/terraformrc.tpl -o ~/.terraformrc
+#       - run:
+#           name: set << parameters.env >> environment variables
+#           command: secrethub inject -i environments/<< parameters.env >>.auto.tfvars.json.tpl -o << parameters.env >>.auto.tfvars.json
+
+#   test-configuration:
+#     description: awspec tests of the resulting infrastructure resources
+#     parameters:
+#       env:
+#         type: string
+#         default: ''
+#     steps:
+#       - run:
+#           name: test << parameters.env >> configuration
+#           environment:
+#             TEST_ENV: << parameters.env >>
+#           command: secrethub run -- bash scripts/vpc.test.sh << parameters.env >>
+
+# workflows:
+#   version: 2
+#   lab-platform-vpc-pipeline:
+
+#     jobs:
+#       - terraform/plan:
+#           name: sandbox-change-plan
+#           context: twdps-core-labs-team
+#           shell: secrethub run -- /bin/sh -eo pipefail
+#           workspace: sandbox
+#           before-terraform:
+#             - set-environment:
+#                 env: sandbox
+#           filters: *on-push-master
+
+#       - approve-sandbox-changes:
+#           type: approval
+#           requires:
+#             - sandbox-change-plan
+#           filters: *on-push-master
+
+#       - terraform/apply:
+#           name: sandbox-change-apply
+#           context: twdps-core-labs-team
+#           shell: secrethub run -- /bin/sh -eo pipefail
+#           workspace: sandbox
+#           before-terraform:
+#             - set-environment:
+#                 env: sandbox
+#           after-terraform:
+#             - test-configuration:
+#                 env: sandbox
+#           requires:
+#             - approve-sandbox-changes
+#           filters: *on-push-master
+
+#       # release 
+#       - terraform/plan:
+#           name: preview-change-plan
+#           context: twdps-core-labs-team
+#           shell: secrethub run -- /bin/sh -eo pipefail
+#           workspace: preview
+#           before-terraform:
+#             - set-environment:
+#                 env: preview
+#           filters: *on-tag-master
+
+#       - approve-preview-changes:
+#           type: approval
+#           requires:
+#             - preview-change-plan
+#           filters: *on-tag-master
+
+#       - terraform/apply:
+#           name: preview-change-apply
+#           context: twdps-core-labs-team
+#           shell: secrethub run -- /bin/sh -eo pipefail
+#           workspace: preview
+#           before-terraform:
+#             - set-environment:
+#                 env: preview
+#           after-terraform:
+#             - test-configuration:
+#                 env: preview
+#           requires:
+#             - approve-preview-changes
+#           filters: *on-tag-master
+      
