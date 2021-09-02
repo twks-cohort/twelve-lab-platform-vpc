@@ -82,7 +82,7 @@ workflows:
       - approve-sandbox-changes:
           type: approval
           requires:
-            - test-sandbox-configuration
+            - sandbox-change-plan
           filters: *on-push-main
 
       - terraform/apply:
