@@ -50,7 +50,7 @@ commands:
 jobs:
   test-vpc:
     docker:
-      - image: twdps/circleci-infra-aws
+      - image: twdps/circleci-infra-aws:alpine-1.0.0
     shell: secrethub run -- /bin/sh -eo pipefail
     parameters:
       env:
