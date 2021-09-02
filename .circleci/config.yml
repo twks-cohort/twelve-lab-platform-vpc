@@ -59,6 +59,7 @@ jobs:
     steps:
       - run:
           name: test << parameters.env >> configuration
+          working_directory: '.'
           environment:
             TEST_ENV: << parameters.env >>
           command: bash scripts/vpc.test.sh << parameters.env >>
