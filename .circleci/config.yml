@@ -102,7 +102,7 @@ workflows:
           name: test-sandbox-configuration
           env: sandbox
           requires:
-            - sandbox-change-plan
+            - sandbox-change-apply
           filters: *on-push-main
 
 # ---
