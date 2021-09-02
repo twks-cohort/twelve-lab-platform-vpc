@@ -61,7 +61,6 @@ jobs:
       - setup_remote_docker
       - run:
           name: test << parameters.env >> configuration
-          working_directory: '.'
           environment:
             TEST_ENV: << parameters.env >>
           command: bash scripts/vpc.test.sh << parameters.env >>
@@ -71,6 +70,7 @@ workflows:
   lab-platform-vpc-pipeline:
 
     jobs:
+      # git push: deploy sandbox
       - terraform/plan:
           name: sandbox-change-plan
           context: twdps-core-labs-team
@@ -103,10 +103,14 @@ workflows:
 
       - test-vpc:
           name: test-sandbox-configuration
+          context: twdps-core-labs-team
           env: sandbox
           requires:
             - sandbox-change-apply
           filters: *on-push-main
+
+
+
 
 # ---
 # version: 2.1
