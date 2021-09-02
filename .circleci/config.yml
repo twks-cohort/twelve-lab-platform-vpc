@@ -57,6 +57,8 @@ jobs:
         type: string
         default: ''
     steps:
+      - checkout
+      - setup_remote_docker
       - run:
           name: test << parameters.env >> configuration
           working_directory: '.'
