@@ -34,8 +34,24 @@ commands:
           name: set << parameters.env >> environment variables
           command: secrethub inject -i environments/<< parameters.env >>.auto.tfvars.json.tpl -o << parameters.env >>.auto.tfvars.json
 
-  test-configuration:
-    description: awspec tests of the resulting infrastructure resources
+  # test-configuration:
+  #   description: awspec tests of the resulting infrastructure resources
+  #   parameters:
+  #     env:
+  #       type: string
+  #       default: ''
+  #   steps:
+  #     - run:
+  #         name: test << parameters.env >> configuration
+  #         environment:
+  #           TEST_ENV: << parameters.env >>
+  #         command: secrethub run -- bash scripts/vpc.test.sh << parameters.env >>
+
+jobs:
+  test-vpc:
+    docker:
+      - image: twdps/circleci-infra-aws
+    shell: secrethub run -- /bin/sh -eo pipefail
     parameters:
       env:
         type: string
@@ -45,7 +61,7 @@ commands:
           name: test << parameters.env >> configuration
           environment:
             TEST_ENV: << parameters.env >>
-          command: secrethub run -- bash scripts/vpc.test.sh << parameters.env >>
+          command: bash scripts/vpc.test.sh << parameters.env >>
 
 workflows:
   version: 2
@@ -66,7 +82,7 @@ workflows:
       - approve-sandbox-changes:
           type: approval
           requires:
-            - sandbox-change-plan
+            - test-sandbox-configuration
           filters: *on-push-main
 
       - terraform/apply:
@@ -78,11 +94,15 @@ workflows:
           before-terraform:
             - set-environment:
                 env: sandbox
-          after-terraform:
-            - test-configuration:
-                env: sandbox
           requires:
             - approve-sandbox-changes
+          filters: *on-push-main
+
+      - test-vpc:
+          name: test-sandbox-configuration
+          env: sandbox
+          requires:
+            - sandbox-change-plan
           filters: *on-push-main
 
 # ---
