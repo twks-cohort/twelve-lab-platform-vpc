@@ -59,6 +59,8 @@ jobs:
     steps:
       - checkout
       - setup_remote_docker
+      - set-environment:
+          env: << parameters.env >>
       - run:
           name: test << parameters.env >> configuration
           environment:
@@ -109,7 +111,44 @@ workflows:
             - sandbox-change-apply
           filters: *on-push-main
 
+      # git tag: deploy preview
+      - terraform/plan:
+          name: preview-change-plan
+          context: twdps-core-labs-team
+          shell: secrethub run -- /bin/sh -eo pipefail
+          workspace: preview
+          terraform-version: "1.0.5"
+          before-terraform:
+            - set-environment:
+                env: preview
+          filters: *on-push-main
 
+      - approve-preview-changes:
+          type: approval
+          requires:
+            - preview-change-plan
+          filters: *on-push-main
+
+      - terraform/apply:
+          name: preview-change-apply
+          context: twdps-core-labs-team
+          shell: secrethub run -- /bin/sh -eo pipefail
+          workspace: preview
+          terraform-version: "1.0.5"
+          before-terraform:
+            - set-environment:
+                env: preview
+          requires:
+            - approve-preview-changes
+          filters: *on-push-main
+
+      - test-vpc:
+          name: test-preview-configuration
+          context: twdps-core-labs-team
+          env: preview
+          requires:
+            - preview-change-apply
+          filters: *on-push-main
 
 
 # ---
