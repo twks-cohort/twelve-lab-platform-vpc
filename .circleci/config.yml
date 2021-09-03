@@ -8,15 +8,15 @@ orbs:
 
 parameters:
   terraform-version:
-    description: use terraform version
+    description: terraform version for all jobs
     type: string
-    default: "1.0.5"
+    default: "1.0.6"
   context:
-    description: use circleci context
+    description: circleci context for all jobs
     type: string
     default: twdps-core-labs-team
   shell-options:
-    description: use shell options
+    description: shell options for all jobs
     type: string
     default: secrethub run -- /bin/sh -eo pipefail
 
