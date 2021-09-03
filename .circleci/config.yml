@@ -4,6 +4,24 @@ version: 2.1
 orbs:
   terraform: twdps/terraform@dev:latest
 
+# ==== global pipeline parameters
+
+parameters:
+  terraform-version:
+    description: use terraform version
+    type: string
+    default: "1.0.5"
+  context:
+    description: use circleci context
+    type: string
+    default: twdps-core-labs-team
+  shell-options:
+    description: use shell options
+    type: string
+    default: secrethub run -- /bin/sh -eo pipefail
+
+# ==== triggers
+
 # git push: deploy sandbox
 on-push-main: &on-push-main
   branches:
@@ -63,10 +81,10 @@ workflows:
       # git push: deploy sandbox
       - terraform/plan:
           name: sandbox-change-plan
-          context: twdps-core-labs-team
-          shell: secrethub run -- /bin/sh -eo pipefail
+          context: << pipeline.parameters.context >>
+          shell: << pipeline.parameters.shell-options >>
           workspace: sandbox
-          terraform-version: "1.0.5"
+          terraform-version: << pipeline.parameters.terraform-version >>
           before-terraform:
             - set-environment:
                 env: sandbox
@@ -80,10 +98,10 @@ workflows:
 
       - terraform/apply:
           name: sandbox-change-apply
-          context: twdps-core-labs-team
-          shell: secrethub run -- /bin/sh -eo pipefail
+          context: << pipeline.parameters.context >>
+          shell: << pipeline.parameters.shell-options >>
           workspace: sandbox
-          terraform-version: "1.0.5"
+          terraform-version: << pipeline.parameters.terraform-version >>
           before-terraform:
             - set-environment:
                 env: sandbox
@@ -93,7 +111,7 @@ workflows:
 
       - test-vpc:
           name: test-sandbox-configuration
-          context: twdps-core-labs-team
+          context: << pipeline.parameters.context >>
           env: sandbox
           requires:
             - sandbox-change-apply
@@ -102,10 +120,10 @@ workflows:
       # git tag: deploy preview
       - terraform/plan:
           name: preview-change-plan
-          context: twdps-core-labs-team
-          shell: secrethub run -- /bin/sh -eo pipefail
+          context: << pipeline.parameters.context >>
+          shell: << pipeline.parameters.shell-options >>
           workspace: preview
-          terraform-version: "1.0.5"
+          terraform-version: << pipeline.parameters.terraform-version >>
           before-terraform:
             - set-environment:
                 env: preview
@@ -119,10 +137,10 @@ workflows:
 
       - terraform/apply:
           name: preview-change-apply
-          context: twdps-core-labs-team
-          shell: secrethub run -- /bin/sh -eo pipefail
+          context: << pipeline.parameters.context >>
+          shell: << pipeline.parameters.shell-options >>
           workspace: preview
-          terraform-version: "1.0.5"
+          terraform-version: << pipeline.parameters.terraform-version >>
           before-terraform:
             - set-environment:
                 env: preview
@@ -132,7 +150,7 @@ workflows:
 
       - test-vpc:
           name: test-preview-configuration
-          context: twdps-core-labs-team
+          context: << pipeline.parameters.context >>
           env: preview
           requires:
             - preview-change-apply
