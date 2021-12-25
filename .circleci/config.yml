@@ -10,7 +10,7 @@ parameters:
   terraform-version:
     description: terraform version for all jobs
     type: string
-    default: "1.0.6"
+    default: "1.1.2"
   context:
     description: circleci context for all jobs
     type: string
