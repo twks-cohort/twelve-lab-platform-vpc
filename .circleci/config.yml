@@ -155,3 +155,23 @@ workflows:
           requires:
             - preview-change-apply
           filters: *on-tag-main
+
+
+  nightly-test-run:
+    triggers:
+      - schedule:
+          cron: "0 0 1 * *"
+          filters:
+            branches:
+              only:
+                - main
+    jobs:
+      - test-vpc:
+          name: nightly-sandbox
+          context: << pipeline.parameters.context >>
+          env: sandbox
+          
+      - test-vpc:
+          name: nightly-preview
+          context: << pipeline.parameters.context >>
+          env: preview
