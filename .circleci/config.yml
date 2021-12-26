@@ -7,10 +7,6 @@ orbs:
 # ==== global pipeline parameters
 
 parameters:
-  terraform-version:
-    description: terraform version for all jobs
-    type: string
-    default: "1.1.2"
   context:
     description: circleci context for all jobs
     type: string
@@ -19,6 +15,14 @@ parameters:
     description: shell options for all jobs
     type: string
     default: secrethub run -- /bin/sh -eo pipefail
+  terraform-version:
+    description: terraform version for all jobs
+    type: string
+    default: "1.1.2"
+  executor-image:
+    description: use this image for local job definitions
+    type: string
+    default: twdps/circleci-infra-aws:alpine-1.3.0
 
 # ==== triggers
 
@@ -56,8 +60,8 @@ jobs:
 
   test-vpc:
     docker:
-      - image: twdps/circleci-infra-aws:alpine-1.0.2
-    shell: secrethub run -- /bin/sh -eo pipefail
+      - image: << pipeline.parameters.executor-image >>
+    shell: << pipeline.parameters.shell-options >>
     parameters:
       env:
         type: string
