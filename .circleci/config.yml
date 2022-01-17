@@ -3,6 +3,8 @@ version: 2.1
 
 orbs:
   terraform: twdps/terraform@0.4.0
+  # used for github-release-notes feature
+  executor-tools: twdps/executor-tools@0.2.0
 
 # ==== global pipeline parameters
 
@@ -18,7 +20,7 @@ parameters:
   terraform-version:
     description: terraform version for all jobs
     type: string
-    default: "1.1.2"
+    default: "1.1.3"
   executor-image:
     description: use this image for local job definitions
     type: string
@@ -45,37 +47,37 @@ commands:
   set-environment: 
     description: generate environment credentials and configuration from templates
     parameters:
-      env:
+      cluster:
+        description: cluster environment
         type: string
-        default: ''
     steps:
       - run:
           name: set ~/.terraformrc
           command: secrethub inject -i tpl/terraformrc.tpl -o ~/.terraformrc
       - run:
           name: set << parameters.env >> environment variables
-          command: secrethub inject -i environments/<< parameters.env >>.auto.tfvars.json.tpl -o << parameters.env >>.auto.tfvars.json
+          command: secrethub inject -i environments/<< parameters.cluster >>.auto.tfvars.json.tpl -o << parameters.cluster >>.auto.tfvars.json
 
 jobs:
 
-  test-vpc:
+  validate-vpc:
     docker:
       - image: << pipeline.parameters.executor-image >>
     shell: << pipeline.parameters.shell-options >>
     parameters:
-      env:
+      cluster:
+        description: cluster vpc configuration to validate
         type: string
-        default: ''
     steps:
       - checkout
       - setup_remote_docker
       - set-environment:
-          env: << parameters.env >>
+          cluster: << parameters.env >>
       - run:
-          name: test << parameters.env >> configuration
+          name: test << parameters.cluster >> configuration
           environment:
-            TEST_ENV: << parameters.env >>
-          command: bash scripts/vpc.test.sh << parameters.env >>
+            TEST_ENV: << parameters.cluster >>
+          command: bash scripts/vpc.test.sh << parameters.cluster >>
 
 workflows:
   version: 2
@@ -91,7 +93,7 @@ workflows:
           terraform-version: << pipeline.parameters.terraform-version >>
           before-terraform:
             - set-environment:
-                env: sandbox
+                cluster: sandbox
           filters: *on-push-main
 
       - approve-sandbox-changes:
@@ -108,15 +110,15 @@ workflows:
           terraform-version: << pipeline.parameters.terraform-version >>
           before-terraform:
             - set-environment:
-                env: sandbox
+                cluster: sandbox
           requires:
             - approve-sandbox-changes
           filters: *on-push-main
 
-      - test-vpc:
-          name: test-sandbox-configuration
+      - validate-vpc:
+          name: test-sandbox-vpc-configuration
           context: << pipeline.parameters.context >>
-          env: sandbox
+          cluster: sandbox
           requires:
             - sandbox-change-apply
           filters: *on-push-main
@@ -130,7 +132,7 @@ workflows:
           terraform-version: << pipeline.parameters.terraform-version >>
           before-terraform:
             - set-environment:
-                env: preview
+                cluster: preview
           filters: *on-tag-main
 
       - approve-preview-changes:
@@ -147,21 +149,29 @@ workflows:
           terraform-version: << pipeline.parameters.terraform-version >>
           before-terraform:
             - set-environment:
-                env: preview
+                cluster: preview
           requires:
             - approve-preview-changes
           filters: *on-tag-main
 
-      - test-vpc:
-          name: test-preview-configuration
+      - validate-vpc:
+          name: test-preview-vpc-configuration
           context: << pipeline.parameters.context >>
-          env: preview
+          cluster: preview
           requires:
             - preview-change-apply
           filters: *on-tag-main
 
+  generate-release-notes:
+    jobs:
+      - executor-tools/release:
+          name: release-lab-platform-vpc
+          context: << pipeline.parameters.context >>
+          shell: << pipeline.parameters.shell-options >>
+          filters: *on-tag-main
 
-  nightly-test-run:
+  # nightly vpc configuration validation
+  nightly-vpc-configuration-validation:
     triggers:
       - schedule:
           cron: "0 1 * * *"
@@ -170,12 +180,11 @@ workflows:
               only:
                 - main
     jobs:
-      - test-vpc:
-          name: nightly-sandbox
+      - validate-vpc:
+          name: nightly-sandbox-vpc-validation
           context: << pipeline.parameters.context >>
-          env: sandbox
-          
-      - test-vpc:
-          name: nightly-preview
+          cluster: sandbox 
+      - validate-vpc:
+          name: nightly-preview-vpv-validation
           context: << pipeline.parameters.context >>
-          env: preview
+          cluster: preview

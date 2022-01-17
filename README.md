@@ -59,4 +59,6 @@
 | intra   | local                          |
 ```
 
----
+### vpc-flow-logs
+
+Uncomment section in main.tf to generate vpc-flow-logs.  

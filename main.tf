@@ -39,6 +39,16 @@ module "vpc" {
   enable_nat_gateway = true
   single_nat_gateway = true
 
+  # Cloudwatch log group and IAM role will be created
+  # enable_flow_log                      = true
+  # create_flow_log_cloudwatch_log_group = true
+  # create_flow_log_cloudwatch_iam_role  = true
+  # flow_log_max_aggregation_interval    = 60
+
+  # vpc_flow_log_tags = {
+  #   Name = "vpc-flow-logs-cloudwatch-logs-default"
+  # }
+
   tags = {
     "cluster" = var.cluster_name
     "kubernetes.io/cluster/${var.cluster_name}" = "shared"
