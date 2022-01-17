@@ -72,7 +72,7 @@ jobs:
       - checkout
       - setup_remote_docker
       - set-environment:
-          cluster: << parameters.env >>
+          cluster: << parameters.cluster >>
       - run:
           name: test << parameters.cluster >> configuration
           environment:
