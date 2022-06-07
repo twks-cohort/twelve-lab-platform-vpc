@@ -1,8 +1,8 @@
 {
   "cluster_name": "preview",
   "aws_region": "us-east-2",
-  "assume_role": "DPSTerraformRole",
-  "account_id": "{{ twdps/di/svc/aws/dps-2/aws-account-id }}",
+  "assume_role": "DPSPlatformVPCRole",
+  "account_id": "{{ op://empc-lab/aws-dps-2/aws-account-id }}",
   "vpc_cidr": "10.51.0.0/16",
   "vpc_azs": ["us-east-2a","us-east-2b","us-east-2c"],
   "vpc_private_subnets": ["10.51.0.0/19", "10.51.32.0/19", "10.51.64.0/19"],

@@ -2,9 +2,9 @@
 version: 2.1
 
 orbs:
-  terraform: twdps/terraform@0.4.0
+  terraform: twdps/terraform@0.5.0
   # used for github-release-notes feature
-  executor-tools: twdps/executor-tools@0.2.0
+  executor-tools: twdps/executor-tools@0.8.0
 
 # ==== global pipeline parameters
 
@@ -13,18 +13,14 @@ parameters:
     description: circleci context for all jobs
     type: string
     default: twdps-core-labs-team
-  shell-options:
-    description: shell options for all jobs
-    type: string
-    default: secrethub run -- /bin/sh -eo pipefail
   terraform-version:
     description: terraform version for all jobs
     type: string
-    default: "1.1.3"
+    default: "1.2.2"
   executor-image:
     description: use this image for local job definitions
     type: string
-    default: twdps/circleci-infra-aws:alpine-1.3.0
+    default: twdps/circleci-infra-aws:alpine-1.7.0
 
 # ==== triggers
 
@@ -53,18 +49,22 @@ commands:
     steps:
       - run:
           name: set ~/.terraformrc
-          command: secrethub inject -i tpl/terraformrc.tpl -o ~/.terraformrc
+          command: op inject -i tpl/terraformrc.tpl -o ~/.terraformrc
       - run:
           name: set << parameters.cluster >> environment variables
-          command: secrethub inject -i environments/<< parameters.cluster >>.auto.tfvars.json.tpl -o << parameters.cluster >>.auto.tfvars.json
+          command: op inject -i environments/<< parameters.cluster >>.auto.tfvars.json.tpl -o << parameters.cluster >>.auto.tfvars.json
 
 jobs:
 
   validate-vpc:
     docker:
       - image: << pipeline.parameters.executor-image >>
-    shell: << pipeline.parameters.shell-options >>
+    shell: << parameters.shell-options >>
     parameters:
+      shell-options:
+        description: set op bash env
+        type: string
+        default: ""
       cluster:
         description: cluster vpc configuration to validate
         type: string
@@ -81,14 +81,13 @@ jobs:
 
 workflows:
   version: 2
-  lab-platform-vpc-pipeline:
 
+  deploy-sandbox-vpc:
     jobs:
-      # git push: deploy sandbox
       - terraform/plan:
           name: sandbox-change-plan
           context: << pipeline.parameters.context >>
-          shell: << pipeline.parameters.shell-options >>
+          shell: op run --env-file=op.nonprod.env -- /bin/bash -eo pipefail
           workspace: sandbox
           terraform-version: << pipeline.parameters.terraform-version >>
           before-terraform:
@@ -105,7 +104,7 @@ workflows:
       - terraform/apply:
           name: sandbox-change-apply
           context: << pipeline.parameters.context >>
-          shell: << pipeline.parameters.shell-options >>
+          shell: op run --env-file=op.nonprod.env -- /bin/bash -eo pipefail
           workspace: sandbox
           terraform-version: << pipeline.parameters.terraform-version >>
           before-terraform:
@@ -118,16 +117,18 @@ workflows:
       - validate-vpc:
           name: test-sandbox-vpc-configuration
           context: << pipeline.parameters.context >>
+          shell-options: op run --env-file=op.nonprod.env -- /bin/bash -eo pipefail
           cluster: sandbox
           requires:
             - sandbox-change-apply
           filters: *on-push-main
 
-      # git tag: deploy preview
+  deploy-prod-vpc:
+    jobs:
       - terraform/plan:
           name: preview-change-plan
           context: << pipeline.parameters.context >>
-          shell: << pipeline.parameters.shell-options >>
+          shell: op run --env-file=op.nonprod.env -- /bin/bash -eo pipefail
           workspace: preview
           terraform-version: << pipeline.parameters.terraform-version >>
           before-terraform:
@@ -144,7 +145,7 @@ workflows:
       - terraform/apply:
           name: preview-change-apply
           context: << pipeline.parameters.context >>
-          shell: << pipeline.parameters.shell-options >>
+          shell: op run --env-file=op.nonprod.env -- /bin/bash -eo pipefail
           workspace: preview
           terraform-version: << pipeline.parameters.terraform-version >>
           before-terraform:
@@ -157,9 +158,49 @@ workflows:
       - validate-vpc:
           name: test-preview-vpc-configuration
           context: << pipeline.parameters.context >>
+          shell-options: op run --env-file=op.nonprod.env -- /bin/bash -eo pipefail
           cluster: preview
           requires:
             - preview-change-apply
+          filters: *on-tag-main
+
+      - terraform/plan:
+          name: prod-change-plan
+          context: << pipeline.parameters.context >>
+          shell: op run --env-file=op.prod.env -- /bin/bash -eo pipefail
+          workspace: prod
+          terraform-version: << pipeline.parameters.terraform-version >>
+          before-terraform:
+            - set-environment:
+                cluster: prod
+          filters: *on-tag-main
+
+      - approve-prod-changes:
+          type: approval
+          requires:
+            - prod-change-plan
+          filters: *on-tag-main
+
+      - terraform/apply:
+          name: prod-change-apply
+          context: << pipeline.parameters.context >>
+          shell: op run --env-file=op.prod.env -- /bin/bash -eo pipefail
+          workspace: prod
+          terraform-version: << pipeline.parameters.terraform-version >>
+          before-terraform:
+            - set-environment:
+                cluster: prod
+          requires:
+            - approve-prod-changes
+          filters: *on-tag-main
+
+      - validate-vpc:
+          name: test-prod-vpc-configuration
+          context: << pipeline.parameters.context >>
+          shell-options: op run --env-file=op.prod.env -- /bin/bash -eo pipefail
+          cluster: prod
+          requires:
+            - prod-change-apply
           filters: *on-tag-main
 
   generate-release-notes:
@@ -183,8 +224,15 @@ workflows:
       - validate-vpc:
           name: nightly-sandbox-vpc-validation
           context: << pipeline.parameters.context >>
+          shell-options: op run --env-file=op.nonprod.env -- /bin/bash -eo pipefail
           cluster: sandbox 
       - validate-vpc:
-          name: nightly-preview-vpv-validation
+          name: nightly-preview-vpc-validation
           context: << pipeline.parameters.context >>
+          shell-options: op run --env-file=op.nonprod.env -- /bin/bash -eo pipefail
           cluster: preview
+      - validate-vpc:
+          name: nightly-prod-vpc-validation
+          context: << pipeline.parameters.context >>
+          shell-options: op run --env-file=op.prod.env -- /bin/bash -eo pipefail
+          cluster: prod
