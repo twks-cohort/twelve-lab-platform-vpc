@@ -203,13 +203,13 @@ workflows:
             - prod-change-apply
           filters: *on-tag-main
 
-  generate-release-notes:
-    jobs:
-      - executor-tools/release:
-          name: release-lab-platform-vpc
-          context: << pipeline.parameters.context >>
-          shell: << pipeline.parameters.shell-options >>
-          filters: *on-tag-main
+  # generate-release-notes:
+  #   jobs:
+  #     - executor-tools/release:
+  #         name: release-lab-platform-vpc
+  #         context: << pipeline.parameters.context >>
+  #         shell: op run --env-file=op.prod.env -- /bin/bash -eo pipefail
+  #         filters: *on-tag-main
 
   # nightly vpc configuration validation
   nightly-vpc-configuration-validation:
