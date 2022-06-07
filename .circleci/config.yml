@@ -158,6 +158,7 @@ workflows:
                   source $BASH_ENV
             - set-environment:
                 cluster: preview
+                source-env: op.nonprod.env
           filters: *on-tag-main
 
       - approve-preview-changes:
@@ -180,6 +181,7 @@ workflows:
                   source $BASH_ENV
             - set-environment:
                 cluster: preview
+                source-env: op.nonprod.env
           requires:
             - approve-preview-changes
           filters: *on-tag-main
@@ -207,6 +209,7 @@ workflows:
                   source $BASH_ENV
             - set-environment:
                 cluster: prod
+                source-env: op.prod.env
           filters: *on-tag-main
 
       - approve-prod-changes:
@@ -229,6 +232,7 @@ workflows:
                   source $BASH_ENV
             - set-environment:
                 cluster: prod
+                source-env: op.prod.env
           requires:
             - approve-prod-changes
           filters: *on-tag-main
@@ -236,7 +240,7 @@ workflows:
       - validate-vpc:
           name: test-prod-vpc-configuration
           context: << pipeline.parameters.context >>
-          source-env: op.nonprod.env
+          source-env: op.prod.env
           cluster: prod
           requires:
             - prod-change-apply
