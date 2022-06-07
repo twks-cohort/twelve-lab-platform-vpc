@@ -67,7 +67,6 @@ jobs:
   validate-vpc:
     docker:
       - image: << pipeline.parameters.executor-image >>
-    shell: << parameters.shell-options >>
     parameters:
       cluster:
         description: cluster vpc configuration to validate
