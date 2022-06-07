@@ -98,11 +98,6 @@ workflows:
           workspace: sandbox
           terraform-version: << pipeline.parameters.terraform-version >>
           before-terraform:
-            # - run:
-            #     name: inject environment variables
-            #     command: |
-            #       op inject -i op.nonprod.env -o $BASH_ENV
-            #       source $BASH_ENV
             - set-environment:
                 cluster: sandbox
                 source-env: op.nonprod.env
@@ -121,11 +116,6 @@ workflows:
           workspace: sandbox
           terraform-version: << pipeline.parameters.terraform-version >>
           before-terraform:
-            # - run:
-            #     name: inject environment variables
-            #     command: |
-            #       op inject -i op.nonprod.env -o $BASH_ENV
-            #       source $BASH_ENV
             - set-environment:
                 cluster: sandbox
                 source-env: op.nonprod.env
@@ -151,11 +141,6 @@ workflows:
           workspace: preview
           terraform-version: << pipeline.parameters.terraform-version >>
           before-terraform:
-            - run:
-                name: inject environment variables
-                command: |
-                  op inject -i op.nonprod.env -o $BASH_ENV
-                  source $BASH_ENV
             - set-environment:
                 cluster: preview
                 source-env: op.nonprod.env
@@ -174,11 +159,6 @@ workflows:
           workspace: preview
           terraform-version: << pipeline.parameters.terraform-version >>
           before-terraform:
-            - run:
-                name: inject environment variables
-                command: |
-                  op inject -i op.nonprod.env -o $BASH_ENV
-                  source $BASH_ENV
             - set-environment:
                 cluster: preview
                 source-env: op.nonprod.env
@@ -202,11 +182,6 @@ workflows:
           workspace: prod
           terraform-version: << pipeline.parameters.terraform-version >>
           before-terraform:
-            - run:
-                name: inject environment variables
-                command: |
-                  op inject -i op.prod.env -o $BASH_ENV
-                  source $BASH_ENV
             - set-environment:
                 cluster: prod
                 source-env: op.prod.env
@@ -225,11 +200,6 @@ workflows:
           workspace: prod
           terraform-version: << pipeline.parameters.terraform-version >>
           before-terraform:
-            - run:
-                name: inject environment variables
-                command: |
-                  op inject -i op.prod.env -o $BASH_ENV
-                  source $BASH_ENV
             - set-environment:
                 cluster: prod
                 source-env: op.prod.env
