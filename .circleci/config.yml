@@ -46,7 +46,15 @@ commands:
       cluster:
         description: cluster environment
         type: string
+      source-env:
+        description: env to source
+        type: string
     steps:
+      - run:
+          name: source << parameters.source-env >>
+          command: |
+            op inject -i << parameters.source-env >> -o $BASH_ENV
+            source $BASH_ENV
       - run:
           name: set ~/.terraformrc
           command: op inject -i tpl/terraformrc.tpl -o ~/.terraformrc
@@ -61,18 +69,18 @@ jobs:
       - image: << pipeline.parameters.executor-image >>
     shell: << parameters.shell-options >>
     parameters:
-      shell-options:
-        description: set op bash env
-        type: string
-        default: ""
       cluster:
         description: cluster vpc configuration to validate
+        type: string
+      source-env:
+        description: env to source
         type: string
     steps:
       - checkout
       - setup_remote_docker
       - set-environment:
           cluster: << parameters.cluster >>
+          source-env: << parameters.source-env >>
       - run:
           name: test << parameters.cluster >> configuration
           environment:
@@ -91,13 +99,14 @@ workflows:
           workspace: sandbox
           terraform-version: << pipeline.parameters.terraform-version >>
           before-terraform:
-            - run:
-                name: inject environment variables
-                command: |
-                  op inject -i op.nonprod.env -o $BASH_ENV
-                  source $BASH_ENV
+            # - run:
+            #     name: inject environment variables
+            #     command: |
+            #       op inject -i op.nonprod.env -o $BASH_ENV
+            #       source $BASH_ENV
             - set-environment:
                 cluster: sandbox
+                source-env: op.nonprod.env
           filters: *on-push-main
 
       - approve-sandbox-changes:
@@ -113,13 +122,14 @@ workflows:
           workspace: sandbox
           terraform-version: << pipeline.parameters.terraform-version >>
           before-terraform:
-            - run:
-                name: inject environment variables
-                command: |
-                  op inject -i op.nonprod.env -o $BASH_ENV
-                  source $BASH_ENV
+            # - run:
+            #     name: inject environment variables
+            #     command: |
+            #       op inject -i op.nonprod.env -o $BASH_ENV
+            #       source $BASH_ENV
             - set-environment:
                 cluster: sandbox
+                source-env: op.nonprod.env
           requires:
             - approve-sandbox-changes
           filters: *on-push-main
@@ -127,8 +137,8 @@ workflows:
       - validate-vpc:
           name: test-sandbox-vpc-configuration
           context: << pipeline.parameters.context >>
-          shell-options: op run --env-file=op.nonprod.env -- /bin/bash -eo pipefail
           cluster: sandbox
+          source-env: op.nonprod.env
           requires:
             - sandbox-change-apply
           filters: *on-push-main
@@ -178,8 +188,8 @@ workflows:
       - validate-vpc:
           name: test-preview-vpc-configuration
           context: << pipeline.parameters.context >>
-          shell-options: op run --env-file=op.nonprod.env -- /bin/bash -eo pipefail
           cluster: preview
+          source-env: op.nonprod.env
           requires:
             - preview-change-apply
           filters: *on-tag-main
@@ -227,7 +237,7 @@ workflows:
       - validate-vpc:
           name: test-prod-vpc-configuration
           context: << pipeline.parameters.context >>
-          shell-options: op run --env-file=op.prod.env -- /bin/bash -eo pipefail
+          source-env: op.nonprod.env
           cluster: prod
           requires:
             - prod-change-apply
