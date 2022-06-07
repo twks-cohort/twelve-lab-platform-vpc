@@ -267,15 +267,15 @@ workflows:
       - validate-vpc:
           name: nightly-sandbox-vpc-validation
           context: << pipeline.parameters.context >>
-          shell-options: op run --env-file=op.nonprod.env -- /bin/bash -eo pipefail
+          source-env: op.nonprod.env
           cluster: sandbox 
       - validate-vpc:
           name: nightly-preview-vpc-validation
           context: << pipeline.parameters.context >>
-          shell-options: op run --env-file=op.nonprod.env -- /bin/bash -eo pipefail
+          source-env: op.nonprod.env
           cluster: preview
       - validate-vpc:
           name: nightly-prod-vpc-validation
           context: << pipeline.parameters.context >>
-          shell-options: op run --env-file=op.prod.env -- /bin/bash -eo pipefail
+          source-env: op.prod.env
           cluster: prod
