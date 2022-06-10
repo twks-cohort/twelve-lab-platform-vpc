@@ -136,47 +136,6 @@ workflows:
 
   deploy-prod-vpc:
     jobs:
-      - terraform/destroy:
-          name: preview-destroy
-          context: << pipeline.parameters.context >>
-          shell: op run --env-file=op.nonprod.env -- /bin/bash -eo pipefail
-          workspace: preview
-          terraform-version: << pipeline.parameters.terraform-version >>
-          before-terraform:
-            - set-environment:
-                cluster: preview
-                source-env: op.nonprod.env
-          filters: *on-push-main
-
-      # - approve-preview-changes:
-      #     type: approval
-      #     requires:
-      #       - preview-change-plan
-      #     filters: *on-tag-main
-
-      # - terraform/apply:
-      #     name: preview-change-apply
-      #     context: << pipeline.parameters.context >>
-      #     shell: op run --env-file=op.nonprod.env -- /bin/bash -eo pipefail
-      #     workspace: preview
-      #     terraform-version: << pipeline.parameters.terraform-version >>
-      #     before-terraform:
-      #       - set-environment:
-      #           cluster: preview
-      #           source-env: op.nonprod.env
-      #     requires:
-      #       - approve-preview-changes
-      #     filters: *on-tag-main
-
-      # - validate-vpc:
-      #     name: test-preview-vpc-configuration
-      #     context: << pipeline.parameters.context >>
-      #     cluster: preview
-      #     source-env: op.nonprod.env
-      #     requires:
-      #       - preview-change-apply
-      #     filters: *on-tag-main
-
       - terraform/plan:
           name: prod-change-plan
           context: << pipeline.parameters.context >>
@@ -208,7 +167,7 @@ workflows:
           after-terraform:
             - do/circle-deploy
             - do/slack-webhook:
-                message: lab-platform-vpc sandbox deployment
+                message: lab-platform-vpc prod release
                 webhook-url: $LAB_EVENTS_CHANNEL_WEBHOOK
           requires:
             - approve-prod-changes
