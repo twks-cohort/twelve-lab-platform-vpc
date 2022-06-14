@@ -8,3 +8,4 @@ variable "vpc_azs" {}
 variable "vpc_private_subnets" {}
 variable "vpc_public_subnets" {}
 variable "vpc_intra_subnets" {}
+variable "vpc_database_subnets" {}

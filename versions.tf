@@ -21,4 +21,14 @@ provider "aws" {
     role_arn     = "arn:aws:iam::${var.account_id}:role/${var.assume_role}"
     session_name = "lab-platform-vpc-${var.cluster_name}"
   }
+
+  default_tags {
+    tags = {
+      env      = var.cluster_name
+      cluster  = var.cluster_name
+      pipeline = "lab-platform-vpc"
+      "kubernetes.io/cluster/${var.cluster_name}" = "shared"
+    }
+  }
 }
+
