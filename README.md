@@ -2,7 +2,7 @@
 	<p>
 		<img alt="Thoughtworks Logo" src="https://raw.githubusercontent.com/ThoughtWorks-DPS/static/master/thoughtworks_flamingo_wave.png?sanitize=true" width=200 />
     <br />
-		<img alt="DPS Title" src="https://raw.githubusercontent.com/ThoughtWorks-DPS/static/master/dps_lab_title.png?sanitize=true" width=350/>
+		<img alt="DPS Title" src="https://raw.githubusercontent.com/ThoughtWorks-DPS/static/master/EMPCPlatformStarterKitsImage.png?sanitize=true" width=350/>
 		<br />
 		<a href="https://aws.amazon.com"><img src="https://img.shields.io/badge/-deployed-blank.svg?style=social&logo=amazon"></a>
 		<br />
@@ -12,6 +12,9 @@
 	</p>
 </div>
 
+Strive to create a simple transit routed network. In this way, individual internal AWS account holders can self manage their own account network topologies and connect to other enterprise addresses by connecting to the appropriate transit gateway (which can be configured to auto-accept connections from corporate AWS accounts).  
+
+The platform starter kit repo deals only with the platform instance network routes.  
 
 ```
 | vpc      | region          | az              | az             | az             |
@@ -62,14 +65,6 @@
 | intra   | local                          |
 ```
 
-### vpc-flow-logs
+#### vpc-flow-logs
 
 Uncomment section in main.tf to generate vpc-flow-logs.  
-
-
-started too high - 
-
-sometimes don't need to frame everything, - sometimes too much info
-
-1) asking questions to get someone to move for themselves towards a direction, vs 2) no, do it this way
-
