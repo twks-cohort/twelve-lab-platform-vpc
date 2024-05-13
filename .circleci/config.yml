@@ -20,7 +20,7 @@ parameters:
   executor-image:
     description: use this image for local job definitions
     type: string
-    default: twdps/circleci-infra-aws:alpine-1.8.0
+    default: twdps/circleci-infra-aws:alpine-edge
 
 # ==== triggers
 
