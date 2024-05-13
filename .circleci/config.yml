@@ -86,52 +86,52 @@ jobs:
 workflows:
   version: 2
 
-  deploy sandbox-us-east-2 vpc:
+  deploy sandbox-ap-southeast-2 vpc:
     jobs:
       - terraform/plan:
-          name: sandbox-us-east-2 change plan
+          name: sandbox-ap-southeast-2 change plan
           context: << pipeline.parameters.context >>
           shell: op run --env-file=op.nonprod.env -- /bin/bash -eo pipefail
-          workspace: sandbox-us-east-2
+          workspace: sandbox-ap-southeast-2
           terraform-version: << pipeline.parameters.terraform-version >>
           before-terraform:
             - set-environment:
-                cluster: sandbox-us-east-2
+                cluster: sandbox-ap-southeast-2
                 source-env: op.nonprod.env
           filters: *on-push-main
 
-      - approve sandbox-us-east-2 changes:
+      - approve sandbox-ap-southeast-2 changes:
           type: approval
           requires:
-            - sandbox-us-east-2 change plan
+            - sandbox-ap-southeast-2 change plan
           filters: *on-push-main
 
       - terraform/apply:
-          name: apply sandbox-us-east-2 changes
+          name: apply sandbox-ap-southeast-2 changes
           context: << pipeline.parameters.context >>
           shell: op run --env-file=op.nonprod.env -- /bin/bash -eo pipefail
-          workspace: sandbox-us-east-2
+          workspace: sandbox-ap-southeast-2
           terraform-version: << pipeline.parameters.terraform-version >>
           before-terraform:
             - set-environment:
-                cluster: sandbox-us-east-2
+                cluster: sandbox-ap-southeast-2
                 source-env: op.nonprod.env
           after-terraform:
             - do/circle-deploy
             - do/slack-webhook:
-                message: lab-platform-vpc sandbox-us-east-2 deployment
+                message: lab-platform-vpc sandbox-ap-southeast-2 deployment
                 webhook-url: $LAB_EVENTS_CHANNEL_WEBHOOK
           requires:
-            - approve sandbox-us-east-2 changes
+            - approve sandbox-ap-southeast-2 changes
           filters: *on-push-main
 
       - validate-vpc:
-          name: test sandbox-us-east-2 vpc configuration
+          name: test sandbox-ap-southeast-2 vpc configuration
           context: << pipeline.parameters.context >>
-          cluster: sandbox-us-east-2
+          cluster: sandbox-ap-southeast-2
           source-env: op.nonprod.env
           requires:
-            - apply sandbox-us-east-2 changes
+            - apply sandbox-ap-southeast-2 changes
           filters: *on-push-main
 
   release prod-us-east-1 vpc:
@@ -200,10 +200,10 @@ workflows:
                 - main
     jobs:
       - validate-vpc:
-          name: nightly sandbox-us-east-2 vpc validation
+          name: nightly sandbox-ap-southeast-2 vpc validation
           context: << pipeline.parameters.context >>
           source-env: op.nonprod.env
-          cluster: sandbox-us-east-2
+          cluster: sandbox-ap-southeast-2
       - validate-vpc:
           name: nightly prod-us-east-1 vpc validation
           context: << pipeline.parameters.context >>
