@@ -115,8 +115,6 @@ workflows:
             - set-environment:
                 cluster: sandbox-ap-southeast-2
                 source-env: op.nonprod.env
-          after-terraform:
-            - do/circle-deploy
           requires:
             - approve sandbox-ap-southeast-2 changes
           filters: *on-push-main
